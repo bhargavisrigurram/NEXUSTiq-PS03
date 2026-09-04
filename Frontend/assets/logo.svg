@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="40" height="40" fill="none">
+  <defs>
+    <linearGradient id="copilot-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="50%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+    <linearGradient id="glow-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0.1"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="84" height="84" rx="22" fill="url(#glow-grad)" stroke="url(#copilot-grad)" stroke-width="3"/>
+  <!-- Cart & Stock Nodes -->
+  <path d="M28 34h10l8 28h26l7-20H36" stroke="url(#copilot-grad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="48" cy="72" r="5" fill="#10b981"/>
+  <circle cx="70" cy="72" r="5" fill="#10b981"/>
+  <!-- AI Sparkle -->
+  <path d="M68 24l2 6 6 2-6 2-2 6-2-6-6-2 6-2z" fill="#f59e0b"/>
+</svg>

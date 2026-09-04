@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexusTiq24 — PS03 Retail Sales & Inventory Copilot</title>
+  <meta name="description" content="Grounded, deterministic-first retail sales and inventory copilot for store managers.">
+  <link rel="icon" type="image/svg+xml" href="/static/assets/logo.svg">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- HEADER -->
+    <header>
+      <div class="brand-wrapper">
+        <img src="/static/assets/logo.svg" alt="Retail Copilot Logo" class="brand-logo" id="app-logo">
+        <div>
+          <div class="brand-title">
+            <span>NexusTiq24</span>
+            <span class="highlight">Retail Copilot</span>
+            <span class="badge-ps03">PS03</span>
+          </div>
+          <div class="brand-subtitle">Deterministic-First Sales & Inventory Intelligence for Store Managers</div>
+        </div>
+      </div>
+
+      <div class="header-status-area">
+        <div class="dataset-meta-badge" id="dataset-period-badge">
+          <span>📅</span> <span id="period-text">Dataset: Jun 15 – Aug 28, 2026 (75 Days)</span>
+        </div>
+        <div class="status-pill" id="system-status-pill">
+          <div class="status-dot"></div>
+          <span id="status-text">Backend Connected</span>
+        </div>
+        <button class="btn-secondary" id="btn-simulate" onclick="openSimulatorModal()">
+          🎯 Reorder Simulator
+        </button>
+        <button class="btn-secondary" id="btn-benchmarks" onclick="openBenchmarksModal()">
+          🏆 Benchmarks
+        </button>
+        <button class="btn-secondary" id="btn-open-catalog" onclick="openCatalogModal()">
+          📦 Catalog
+        </button>
+        <button class="btn-secondary" id="btn-export-brief" onclick="exportDailyBrief()" style="border-color: rgba(16, 185, 129, 0.4); color: #34d399;">
+          📥 Export Brief
+        </button>
+      </div>
+    </header>
+
+    <!-- STATS SUMMARY BAR -->
+    <section class="stats-bar" aria-label="Business Key Performance Indicators">
+      <div class="stat-item">
+        <span class="stat-label">Retail Stores</span>
+        <span class="stat-value" id="stat-stores">4 Branches</span>
+        <span class="stat-subtext">Hyderabad, Vijayawada, Chennai, Bengaluru</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Catalogued Products</span>
+        <span class="stat-value" id="stat-products">25 SKUs</span>
+        <span class="stat-subtext">Beverages, Snacks, Food, Care, Household</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Total Units Sold (75d)</span>
+        <span class="stat-value" id="stat-units">...</span>
+        <span class="stat-subtext" id="stat-sales-records">Verified sales records</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Gross Revenue (75d)</span>
+        <span class="stat-value" id="stat-revenue">₹...</span>
+        <span class="stat-subtext">Traceable to itemized sales transactions</span>
+      </div>
+    </section>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="workspace-grid">
+      <!-- LEFT: ATTENTION PANEL -->
+      <section class="panel" aria-labelledby="panel-attention-title">
+        <div class="panel-header">
+          <div class="panel-title" id="panel-attention-title">
+            <span>⚠️ Needs Attention Today</span>
+            <span class="panel-badge" id="alerts-count-badge">0 Alerts</span>
+          </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs" role="tablist">
+          <button class="tab-btn active" onclick="filterAttention('all', this)">All</button>
+          <button class="tab-btn" onclick="filterAttention('stockout_risk', this)">🔴 Stockout Risk</button>
+          <button class="tab-btn" onclick="filterAttention('dead_stock', this)">🟠 Dead Stock</button>
+          <button class="tab-btn" onclick="filterAttention('sales_spike', this)">🔵 Sales Spike</button>
+          <button class="tab-btn" onclick="filterAttention('sales_drop', this)">🟡 Sales Drop</button>
+        </div>
+
+        <!-- Dynamic Attention Cards -->
+        <div class="attention-cards-container" id="attention-cards-list">
+          <div class="attention-card skeleton-pulse" style="height: 140px;"></div>
+          <div class="attention-card skeleton-pulse" style="height: 140px;"></div>
+        </div>
+      </section>
+
+      <!-- RIGHT: CHAT & GROUNDED REASONING -->
+      <section class="panel chat-panel" aria-labelledby="panel-chat-title">
+        <div class="panel-header">
+          <div class="panel-title" id="panel-chat-title">
+            <span>💬 Store Manager Copilot</span>
+          </div>
+          <div style="font-size: 0.78rem; color: var(--text-muted);">
+            Grounding Engine: <strong style="color: #34d399;">Deterministic + Gemini 3.5</strong>
+          </div>
+        </div>
+
+        <!-- Conversation History -->
+        <div class="chat-history" id="chat-messages-stream">
+          <!-- Initial Welcome Message -->
+          <div class="message-bubble copilot">
+            <div class="copilot-response-card">
+              <div class="copilot-badge-row">
+                <div class="copilot-author">
+                  <img src="/static/assets/logo.svg" alt="" width="20" height="20">
+                  <span>Retail Copilot</span>
+                </div>
+                <div class="grounding-tag">
+                  <span>🛡️</span> Zero-Hallucination Grounded
+                </div>
+              </div>
+              <div class="copilot-answer-text">
+                Hello Store Manager! I am your <strong>Retail Sales & Inventory Copilot</strong>.
+
+I analyze our store transactions, inventory levels, stockout risks, and sales anomalies with 100% mathematical fidelity. Every number is grounded in our verified dataset. If data for a product or branch does not exist, I will explicitly tell you rather than guess.
+
+Select one of the demo prompts below or ask any question about our inventory, stores, or reorder needs.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Suggested Chips -->
+        <div class="chips-wrapper">
+          <div class="chips-label">🎯 Click to Test Core Scenarios:</div>
+          <div class="chips-row">
+            <button class="chip chip-demo" onclick="submitPrompt('What products are running out soon?')">
+              🔴 Demo 1: Stockout Risk
+            </button>
+            <button class="chip chip-demo" onclick="submitPrompt('Which products are not moving (dead stock)?')">
+              🟠 Demo 2: Dead Stock
+            </button>
+            <button class="chip chip-demo" onclick="submitPrompt('What unusual sales spikes or drops happened?')">
+              🔵 Demo 3: Sales Anomalies
+            </button>
+            <button class="chip chip-demo" onclick="submitPrompt('How did Product P17 perform in Chennai?')">
+              🛑 Demo 4: Null Case (No Data)
+            </button>
+            <button class="chip" onclick="submitPrompt('What should I reorder for Fresh Orange Juice in Hyderabad?')">
+              📦 Reorder Fresh Juice
+            </button>
+            <button class="chip" onclick="submitPrompt('Which store is selling Energy Boost fastest?')">
+              ⚡ Energy Boost Leader
+            </button>
+            <button class="chip" onclick="submitPrompt('Simulate 14 days of cover for Fresh Orange Juice in Hyderabad')">
+              🔮 14-Day Simulation
+            </button>
+            <button class="chip" onclick="submitPrompt('Compare overall performance across all retail stores')">
+              📊 Cross-Store Leaderboard
+            </button>
+          </div>
+        </div>
+
+        <!-- Question Input Form -->
+        <form class="chat-input-form" id="chat-form" onsubmit="handleChatSubmit(event)">
+          <button type="button" class="btn-mic" id="btn-mic" onclick="toggleVoiceInput()" title="Hands-Free Voice Dictation">
+            🎤
+          </button>
+          <input 
+            type="text" 
+            id="chat-input-field" 
+            class="chat-input" 
+            placeholder="Ask your store data or click 🎤 to speak..." 
+            autocomplete="off"
+            required
+          >
+          <button type="submit" class="btn-send" id="btn-send-chat">
+            <span>Ask Copilot</span>
+            <span>↵</span>
+          </button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <!-- WHAT-IF REORDER SIMULATOR MODAL -->
+  <div class="modal-overlay" id="simulator-modal" onclick="closeSimulatorModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 style="font-size: 1.1rem; font-weight: 700;">🎯 What-If Reorder & Inventory Simulator</h3>
+        <button class="btn-close-modal" onclick="closeSimulatorModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom: 1.25rem; font-size: 0.85rem; color: var(--text-secondary);">
+          Simulate replenishment capital requirements and order quantities for any branch and product.
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Store Location</label>
+            <select id="sim-store-select" class="form-select" onchange="runSimulation()"></select>
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Product</label>
+            <select id="sim-product-select" class="form-select" onchange="runSimulation()"></select>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.25); padding: 1rem; border-radius: var(--radius-sm);">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+            <label style="font-size: 0.82rem; font-weight: 600; color: #a5b4fc;">Desired Inventory Coverage:</label>
+            <span id="sim-days-display" style="font-weight: 700; font-family: 'JetBrains Mono', monospace; color: #38bdf8;">14 Days</span>
+          </div>
+          <input type="range" id="sim-days-slider" min="3" max="45" value="14" class="slider-input" oninput="updateSimSlider(this.value)">
+          <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem;">
+            <span>3 Days (Lean)</span>
+            <span>14 Days (Standard)</span>
+            <span>30 Days (Safety Buffer)</span>
+            <span>45 Days</span>
+          </div>
+        </div>
+
+        <!-- Simulation Results Cards -->
+        <div id="sim-results-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1rem;"></div>
+        <div id="sim-assumption-note" style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BENCHMARKS MODAL -->
+  <div class="modal-overlay" id="benchmarks-modal" onclick="closeBenchmarksModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 style="font-size: 1.1rem; font-weight: 700;">🏆 Store Rankings & Category Benchmarks</h3>
+        <button class="btn-close-modal" onclick="closeBenchmarksModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h4 style="margin-bottom: 0.75rem; color: #a5b4fc;">Branch Operational Efficiency Leaderboard</h4>
+        <div id="benchmarks-stores-container" style="margin-bottom: 1.75rem;">Loading rankings...</div>
+        <h4 style="margin-bottom: 0.75rem; color: #a5b4fc;">Category Revenue Share</h4>
+        <div id="benchmarks-categories-container">Loading categories...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATALOG MODAL -->
+  <div class="modal-overlay" id="catalog-modal" onclick="closeCatalogModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 style="font-size: 1.1rem; font-weight: 700;">📦 Retail Store & Product Catalogue</h3>
+        <button class="btn-close-modal" onclick="closeCatalogModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h4 style="margin-bottom: 0.75rem; color: #a5b4fc;">Stores (4 Branches)</h4>
+        <div id="modal-stores-list" style="margin-bottom: 1.5rem;">Loading stores...</div>
+        <h4 style="margin-bottom: 0.75rem; color: #a5b4fc;">Products (25 SKUs across 5 Categories)</h4>
+        <div id="modal-products-list">Loading products...</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

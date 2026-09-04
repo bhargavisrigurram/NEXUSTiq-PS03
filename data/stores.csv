@@ -1,0 +1,5 @@
+store_id,store_name,city,region,sqft,manager
+S01,Store Hyderabad,Hyderabad,South,4500,Ramesh Kumar
+S02,Store Vijayawada,Vijayawada,South,3200,Lakshmi Narayana
+S03,Store Chennai,Chennai,South,5100,Anand Sundaram
+S04,Store Bengaluru,Bengaluru,South,6000,Pooja Hegde

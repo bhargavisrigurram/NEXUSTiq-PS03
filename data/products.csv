@@ -1,0 +1,26 @@
+product_id,product_name,category,unit_price,cost_price,reorder_level,typical_daily_sales
+P01,Sparkle Water 1L,Beverages,45.0,25.0,50,15
+P02,Fresh Orange Juice 500ml,Beverages,85.0,50.0,40,12
+P03,Cold Brew Coffee 250ml,Beverages,120.0,70.0,30,8
+P04,Masala Chai Premix 200g,Beverages,160.0,95.0,25,6
+P05,Energy Boost 250ml,Beverages,110.0,60.0,45,10
+P06,Artisanal Butter Cookies 200g,Snacks,150.0,85.0,35,14
+P07,Roasted Almonds 150g,Snacks,240.0,160.0,20,5
+P08,Spicy Banana Chips 100g,Snacks,60.0,30.0,50,16
+P09,Multigrain Crackers 150g,Snacks,90.0,50.0,30,9
+P10,Dark Chocolate 80g,Snacks,130.0,75.0,25,7
+P11,Basmati Rice 5kg,Packaged Food,550.0,380.0,20,4
+P12,Cold Pressed Mustard Oil 1L,Packaged Food,260.0,180.0,25,5
+P13,Organic Quinoa 500g,Packaged Food,320.0,210.0,15,3
+P14,Durum Wheat Pasta 500g,Packaged Food,140.0,80.0,30,8
+P15,Instant Oats 1kg,Packaged Food,190.0,120.0,25,7
+P16,Herbal Shampoo 250ml,Personal Care,210.0,125.0,20,5
+P17,Neem Face Wash 150ml,Personal Care,175.0,95.0,25,6
+P18,Organic Lip Balm 15g,Personal Care,125.0,60.0,30,4
+P19,Moisturizing Lotion 200ml,Personal Care,280.0,170.0,15,3
+P20,Bamboo Toothbrush 4pk,Personal Care,180.0,90.0,20,4
+P21,Biodegradable Dish Soap 500ml,Household,145.0,80.0,30,8
+P22,Lavender Floor Cleaner 1L,Household,220.0,130.0,25,6
+P23,Recycled Paper Towels 2pk,Household,160.0,95.0,35,9
+P24,Microfiber Cloth 3pk,Household,135.0,70.0,25,5
+P25,Compostable Waste Bags 30pk,Household,195.0,110.0,20,5
