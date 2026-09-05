@@ -62,6 +62,8 @@ class HealthResponse(BaseModel):
     sales_record_count: int
     gemini_model: str
     embedding_model: str
+    uploaded_documents_count: int = 0
+    uploaded_chunks_count: int = 0
 
 class SummaryResponse(BaseModel):
     total_stores: int
@@ -119,4 +121,58 @@ class BenchmarkResponse(BaseModel):
     stores: List[StoreBenchmarkItem]
     categories: List[CategoryBenchmarkItem]
     generated_at: str
+
+class DocumentMetadata(BaseModel):
+    doc_id: str
+    filename: str
+    file_type: str
+    file_size_kb: float
+    chunk_count: int
+    upload_time: str
+
+class DocumentUploadResponse(BaseModel):
+    status: str = "success"
+    message: str
+    document: DocumentMetadata
+
+class DocumentListResponse(BaseModel):
+    documents: List[DocumentMetadata] = Field(default_factory=list)
+    total_documents: int = 0
+    total_chunks: int = 0
+
+class ForecastItem(BaseModel):
+    product_id: str
+    product_name: str
+    product_category: str
+    store_id: str
+    store_name: str
+    current_stock: int
+    avg_daily_demand: float
+    demand_7d: float
+    demand_14d: float
+    days_remaining: Optional[float] = None
+    estimated_stockout_date: str
+    status_level: str  # 'CRITICAL STOCK-OUT RISK', 'WARNING STOCK-OUT RISK', 'HEALTHY STOCK', 'DEAD STOCK'
+    status_class: str  # 'critical', 'warning', 'healthy', 'dead'
+
+class ForecastResponse(BaseModel):
+    forecasts: List[ForecastItem]
+    total_items: int
+    critical_count: int
+    warning_count: int
+    generated_at: str
+
+class HistoryRecord(BaseModel):
+    id: str
+    timestamp: str
+    type: str  # 'chat_query', 'simulation', 'document_upload', 'export_report'
+    title: str
+    store: Optional[str] = "All Stores"
+    summary: str
+    details: Dict[str, Any] = Field(default_factory=dict)
+
+class HistoryResponse(BaseModel):
+    history: List[HistoryRecord] = Field(default_factory=list)
+    total_count: int = 0
+
 

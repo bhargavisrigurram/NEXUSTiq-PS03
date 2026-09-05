@@ -4,6 +4,7 @@ import json
 import logging
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
+from datetime import datetime
 import numpy as np
 
 from src.config import INDEX_DIR
@@ -20,7 +21,11 @@ class HybridRetriever:
         self.gemini_client = gemini_client or GeminiClient()
         self.evidence_chunks: List[Dict[str, Any]] = []
         self.embeddings: Optional[np.ndarray] = None
+        self.uploaded_documents: Dict[str, Dict[str, Any]] = {}
+        self.uploaded_chunks: List[Dict[str, Any]] = []
+        self.uploaded_embeddings: Optional[np.ndarray] = None
         self._load_index()
+
 
     def _load_index(self):
         """Loads pre-computed evidence chunks and embeddings from generated_index/."""
@@ -146,11 +151,76 @@ class HybridRetriever:
             "product_name": detected_product[1] if detected_product else None
         }
 
+    def add_document(self, doc_id: str, filename: str, file_type: str, file_size_kb: float, chunks: List[Dict[str, Any]]):
+        """Registers an uploaded document and embeds its chunks into the retrieval engine."""
+        self.uploaded_documents[doc_id] = {
+            "doc_id": doc_id,
+            "filename": filename,
+            "file_type": file_type,
+            "file_size_kb": file_size_kb,
+            "chunk_count": len(chunks),
+            "upload_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+        # Embed newly added document chunks
+        new_vecs = []
+        for c in chunks:
+            c["doc_id"] = doc_id
+            c["filename"] = filename
+            c["file_type"] = file_type
+            vec = None
+            if self.gemini_client and self.gemini_client.is_available:
+                try:
+                    vec = self.gemini_client.embed_text(c["text"])
+                except Exception as e:
+                    logger.warning(f"Could not embed chunk {c.get('chunk_id')}: {e}")
+            new_vecs.append(vec)
+
+        self.uploaded_chunks.extend(chunks)
+
+        # Update uploaded embeddings matrix if valid
+        valid_vecs = [v for v in new_vecs if v is not None]
+        if valid_vecs and len(valid_vecs) == len(new_vecs):
+            new_arr = np.array(new_vecs, dtype=np.float32)
+            if self.uploaded_embeddings is None:
+                self.uploaded_embeddings = new_arr
+            else:
+                self.uploaded_embeddings = np.vstack([self.uploaded_embeddings, new_arr])
+
+        logger.info(f"Registered document '{filename}' with {len(chunks)} chunks.")
+
+    def remove_document(self, doc_id: str) -> bool:
+        """Removes an uploaded document and its chunks from the retrieval engine."""
+        if doc_id not in self.uploaded_documents:
+            return False
+
+        filename = self.uploaded_documents[doc_id]["filename"]
+        del self.uploaded_documents[doc_id]
+
+        # Re-filter uploaded chunks and embeddings
+        kept_chunks = []
+        kept_indices = []
+        for i, c in enumerate(self.uploaded_chunks):
+            if c.get("doc_id") != doc_id:
+                kept_chunks.append(c)
+                kept_indices.append(i)
+
+        self.uploaded_chunks = kept_chunks
+        if self.uploaded_embeddings is not None and kept_indices:
+            self.uploaded_embeddings = self.uploaded_embeddings[kept_indices]
+        else:
+            self.uploaded_embeddings = None
+
+        logger.info(f"Removed document '{filename}' from retrieval index.")
+        return True
+
     def detect_intent(self, query: str) -> str:
         """Classifies the primary manager intent behind the question."""
         q = query.lower()
 
-        if any(w in q for w in ["simulate", "simulation", "what if", "what-if", "target cover", "cover for"]):
+        if any(w in q for w in ["document", "uploaded", "agreement", "contract", "invoice", "sop", "policy", "pdf", "file", "doc", "docx", "clause", "terms", "spec sheet", "manual", "guideline"]):
+            return "document_qa"
+        elif any(w in q for w in ["simulate", "simulation", "what if", "what-if", "target cover", "cover for"]):
             return "simulation"
         elif any(w in q for w in ["benchmark", "compare", "comparison", "leader", "ranking", "rank", "across stores", "all stores", "category share", "top category"]):
             return "benchmark"
@@ -190,7 +260,7 @@ class HybridRetriever:
         return None
 
     def retrieve(self, query: str, top_k: int = 4) -> Dict[str, Any]:
-        """Performs hybrid retrieval returning ranked evidence chunks and structured cards."""
+        """Performs hybrid retrieval returning ranked evidence chunks across retail and uploaded docs."""
         entities = self.extract_entities(query)
         intent = self.detect_intent(query)
         store_id = entities["store_id"]
@@ -208,72 +278,142 @@ class HybridRetriever:
                 "evidence_cards": []
             }
 
-        # Vector & Hybrid scoring
-        num_chunks = len(self.evidence_chunks)
-        scores = np.zeros(num_chunks, dtype=np.float32)
-
-        # 1. Cosine similarity if embeddings available
-        if self.embeddings is not None and num_chunks > 0:
-            query_vec = None
-            if self.gemini_client.is_available:
+        # Calculate query embedding vector once if available
+        query_vec = None
+        if self.gemini_client.is_available:
+            try:
                 query_vec = self.gemini_client.embed_text(query)
+            except Exception as e:
+                logger.warning(f"Error creating query embedding: {e}")
 
+        # --- A. Score Core Retail Evidence Chunks ---
+        retail_chunks_count = len(self.evidence_chunks)
+        retail_scores = np.zeros(retail_chunks_count, dtype=np.float32)
+
+        if self.embeddings is not None and retail_chunks_count > 0:
             if query_vec is not None and len(query_vec) == self.embeddings.shape[1]:
                 q_norm = query_vec / (np.linalg.norm(query_vec) + 1e-9)
-                scores += np.dot(self.embeddings, q_norm)
+                retail_scores += np.dot(self.embeddings, q_norm)
             else:
-                # Fallback lexical matching score
                 q_words = set(query.lower().split())
                 for i, chunk in enumerate(self.evidence_chunks):
                     c_text = chunk["text"].lower()
                     overlap = sum(1 for w in q_words if w in c_text and len(w) > 2)
-                    scores[i] += (overlap * 0.1)
+                    retail_scores[i] += (overlap * 0.1)
 
-        # 2. Entity & Intent Boosts
+        # Entity & Intent Boosts for Retail Chunks
         for i, chunk in enumerate(self.evidence_chunks):
-            # Store boost
             if store_id and chunk.get("store_id") == store_id:
-                scores[i] += 2.0
-
-            # Product boost
+                retail_scores[i] += 2.0
             if prod_id and chunk.get("product_id") == prod_id:
-                scores[i] += 3.0
+                retail_scores[i] += 3.0
 
-            # Intent type match boost
             chunk_type = chunk.get("type", "")
             if intent == "stockout" and chunk_type == "stockout_risk":
-                scores[i] += 2.5
+                retail_scores[i] += 2.5
             elif intent == "dead_stock" and chunk_type == "dead_stock":
-                scores[i] += 2.5
+                retail_scores[i] += 2.5
             elif intent == "spike" and chunk_type == "sales_spike":
-                scores[i] += 2.5
+                retail_scores[i] += 2.5
             elif intent == "drop" and chunk_type == "sales_drop":
-                scores[i] += 2.5
+                retail_scores[i] += 2.5
             elif intent == "attention" and chunk_type in ["stockout_risk", "dead_stock", "sales_spike", "sales_drop"]:
-                scores[i] += 1.5
+                retail_scores[i] += 1.5
 
-        # Rank chunks by score
-        top_indices = np.argsort(scores)[::-1][:top_k]
-        top_chunks = [self.evidence_chunks[idx] for idx in top_indices if scores[idx] > 0]
+        # --- B. Score Uploaded Document Chunks ---
+        doc_chunks_count = len(self.uploaded_chunks)
+        doc_scores = np.zeros(doc_chunks_count, dtype=np.float32)
 
-        if not top_chunks and self.evidence_chunks:
-            # Fallback to top scored chunks if scores were zero
-            top_chunks = self.evidence_chunks[:top_k]
+        if doc_chunks_count > 0:
+            if self.uploaded_embeddings is not None and query_vec is not None and len(query_vec) == self.uploaded_embeddings.shape[1]:
+                q_norm = query_vec / (np.linalg.norm(query_vec) + 1e-9)
+                doc_scores += np.dot(self.uploaded_embeddings, q_norm)
+            else:
+                q_words = set(query.lower().split())
+                for j, dchunk in enumerate(self.uploaded_chunks):
+                    d_text = dchunk["text"].lower()
+                    overlap = sum(1 for w in q_words if w in d_text and len(w) > 2)
+                    doc_scores[j] += (overlap * 0.15)
 
-        # Build structured EvidenceCards
+            # Document Query Boosts
+            q_lower = query.lower()
+            for j, dchunk in enumerate(self.uploaded_chunks):
+                fname = dchunk.get("filename", "").lower()
+                # Filename matching boost
+                if any(part in q_lower for part in re.split(r"[._ -]", fname) if len(part) > 3):
+                    doc_scores[j] += 3.0
+                if intent == "document_qa":
+                    doc_scores[j] += 4.0
+
+        # --- C. Merge and Rank Top-K Across Pools ---
+        all_candidates = []
+        for i, chunk in enumerate(self.evidence_chunks):
+            all_candidates.append({
+                "score": float(retail_scores[i]),
+                "is_doc": False,
+                "data": chunk
+            })
+
+        for j, dchunk in enumerate(self.uploaded_chunks):
+            all_candidates.append({
+                "score": float(doc_scores[j]),
+                "is_doc": True,
+                "data": dchunk
+            })
+
+        all_candidates.sort(key=lambda x: x["score"], reverse=True)
+        top_candidates = all_candidates[:top_k]
+
+        top_chunks = []
         evidence_cards = []
-        for c in top_chunks:
-            metrics = c.get("metrics", {})
-            evidence_cards.append(EvidenceCard(
-                product_id=c.get("product_id") or "N/A",
-                product_name=c.get("product_name") or c.get("store_name") or "Retail Item",
-                store_name=c.get("store_name") or "All Stores",
-                current_stock=int(metrics.get("current_stock", 0)),
-                avg_daily_sales=float(metrics.get("avg_daily_sales", metrics.get("recent_7d_daily_avg", 0.0))),
-                days_remaining=metrics.get("days_remaining", metrics.get("days_of_stock_remaining")),
-                status=c.get("type", "performance_summary"),
-                details=metrics
-            ))
+
+        for cand in top_candidates:
+            c = cand["data"]
+            if cand["is_doc"]:
+                # Uploaded document chunk
+                page_info = f"Page {c.get('page_number')}" if c.get("page_number") else "Section"
+                top_chunks.append({
+                    "text": f"(From Document: {c['filename']}, {page_info}): {c['text']}",
+                    "type": "uploaded_document",
+                    "filename": c["filename"],
+                    "metrics": {
+                        "filename": c["filename"],
+                        "file_type": c.get("file_type", "DOC"),
+                        "page_number": c.get("page_number", 1),
+                        "recommendation": f"Consult {c['filename']} for complete policy or agreement specifications.",
+                        "assumption": f"Sourced directly from user-uploaded document '{c['filename']}' ({page_info})."
+                    }
+                })
+                evidence_cards.append(EvidenceCard(
+                    product_id=c.get("doc_id", "DOC"),
+                    product_name=c.get("filename", "Uploaded Document"),
+                    store_name=page_info,
+                    current_stock=0,
+                    avg_daily_sales=0.0,
+                    days_remaining=None,
+                    status="uploaded_document",
+                    details={
+                        "filename": c.get("filename"),
+                        "page_number": c.get("page_number", 1),
+                        "chunk_index": c.get("chunk_index", 0),
+                        "file_type": c.get("file_type", "DOC"),
+                        "excerpt": c.get("text", "")[:220] + ("..." if len(c.get("text", "")) > 220 else "")
+                    }
+                ))
+            else:
+                # Retail evidence chunk
+                top_chunks.append(c)
+                metrics = c.get("metrics", {})
+                evidence_cards.append(EvidenceCard(
+                    product_id=c.get("product_id") or "N/A",
+                    product_name=c.get("product_name") or c.get("store_name") or "Retail Item",
+                    store_name=c.get("store_name") or "All Stores",
+                    current_stock=int(metrics.get("current_stock", 0)),
+                    avg_daily_sales=float(metrics.get("avg_daily_sales", metrics.get("recent_7d_daily_avg", 0.0))),
+                    days_remaining=metrics.get("days_remaining", metrics.get("days_of_stock_remaining")),
+                    status=c.get("type", "performance_summary"),
+                    details=metrics
+                ))
 
         return {
             "is_null_case": False,
@@ -283,3 +423,4 @@ class HybridRetriever:
             "evidence_chunks": top_chunks,
             "evidence_cards": evidence_cards
         }
+

@@ -40,6 +40,11 @@ NexusTiq24 PS03 solves this by pairing a deterministic analytics engine with loc
   - 🟠 **Dead Stock**: Inventory sitting on shelves with zero sales in the last 14 days.
   - 🔵 **Sales Spikes**: Products experiencing >= +50% demand surge over their 14-day baseline.
   - 🟡 **Sales Drops**: Products suffering >= -50% sales contractions requiring investigation.
+- **Demand Forecasting Engine**: Deterministic 7-day and 14-day velocity-based demand forecasts with calendar runout dates (e.g. `Sep 07, 2026`) and color-coded risk classifications (`CRITICAL STOCK-OUT RISK`, `WARNING STOCK-OUT RISK`, `HEALTHY STOCK`, `DEAD STOCK`).
+- **Decision & Query History Audit Trail**: Persistent history of all past questions, simulations, document uploads, and analytical exports with filter pills, search, 1-click query re-run, and JSON export.
+- **Visual Column Mapping & CSV Ingestion Engine**: Interactive tabular data mapper allowing managers to upload POS transaction sheets or CSVs, inspect columns, visually map schema attributes (`Product Name`, `SKU`, `Category`, `Selling Price`, `Cost Price`, `Lead Time`), and trigger dynamic recalculations.
+- **Multi-Format Document Knowledge Hub (PDF, DOCX, TXT, MD)**: Drag-and-drop or attach store operations manuals, supplier contracts, return policies, SLA agreements, and invoice sheets. Uploaded documents are parsed with zero external binaries, semantically chunked, and dynamically indexed for real-time retrieval.
+- **Verifiable Document Citation Cards**: Inquiries citing uploaded documents return dedicated `📄 Document Source` citation cards with exact filename, page number, and grounded text excerpt for zero-hallucination compliance.
 - **What-If Reorder Simulator**: Interactive simulation drawer allowing store managers to test variable target cover horizons (3 to 30 days) and instantly inspect required order quantities, projected runout dates, and estimated procurement costs (₹) with zero LLM guesswork.
 - **Store & Category Benchmarks Matrix**: Cross-store leaderboard ranking branches by gross revenue, tracking operational health scores (100-point index penalizing stockouts and dead stock), and breaking down category market share.
 - **1-Click Executive Daily Brief Export**: Generates and downloads instant operational CSV reports of all active stockouts, stagnant inventory, and demand anomalies for floor staff.
@@ -65,9 +70,18 @@ NexusTiq24 PS03 solves this by pairing a deterministic analytics engine with loc
    ├── In-Memory Query Cache (CHAT_CACHE for sub-100ms repeat latency)
    └── REST API Endpoints:
          ├── /api/health, /api/summary, /api/attention, /api/chat
+         ├── /api/forecast (Demand Forecasting Engine: 7d & 14d)
+         ├── /api/history (Decision & Query History Audit Trail)
+         ├── /api/preview-csv (Visual Column Mapping & Tabular Ingestion)
+         ├── /api/upload, /api/documents, /api/documents/{doc_id} (Multi-Format Hub)
          ├── /api/simulate-reorder (What-If Cover Simulator)
          ├── /api/benchmarks (Cross-Store Leaderboard & Category Share)
          └── /api/export-report (1-Click CSV Attention Brief)
+             │
+             ├──► [ src/document_parser.py ] (Pure Python PDF, DOCX, TXT, MD Parser & Chunking)
+             │          │
+             │          ▼
+             │    [ data/uploads/* ] (Extracted chunks dynamically embedded & indexed)
              │
              ├──► [ src/data_loader.py ] (Validates CSV schema, foreign keys, date gaps)
              │          │
@@ -85,9 +99,9 @@ NexusTiq24 PS03 solves this by pairing a deterministic analytics engine with loc
              ├──► [ src/retrieval.py ] (Local Hybrid RAG)
              │          │
              │          ├── Entity Extraction (Stores: Hyderabad, Chennai, etc.; Products: P01-P25)
-             │          ├── Intent Classification (Stockout, Dead Stock, Spike, Drop, Reorder, Sim, Bench)
+             │          ├── Intent Classification (Stockout, Dead Stock, Spike, Drop, Reorder, Sim, Doc QA)
              │          ├── Null-Case Detector (Guards missing combinations)
-             │          └── NumPy Cosine Similarity against [ generated_index/embeddings.npy ]
+             │          └── NumPy Cosine Similarity against [ generated_index/embeddings.npy ] + Uploaded Index
              │
              └──► [ src/gemini_client.py ]
                         │
@@ -101,7 +115,7 @@ NexusTiq24 PS03 solves this by pairing a deterministic analytics engine with loc
 
 Prerequisites: Python 3.10+ (tested on Python 3.13.5)
 
-Clone the repository and install dependencies in one step:
+Clone the repository and install all dependencies (FastAPI, Uvicorn, Pandas, Google GenAI, and lightweight pure-Python document parsers `pypdf`, `python-docx`, `python-multipart`):
 
 ```bash
 pip install -r requirements.txt
@@ -272,6 +286,7 @@ tests/test_analytics.py::test_null_case_handling PASSED
 tests/test_analytics.py::test_reorder_calculation PASSED
 tests/test_analytics.py::test_simulate_reorder PASSED
 tests/test_analytics.py::test_benchmarks PASSED
+tests/test_analytics.py::test_demand_forecast PASSED
 tests/test_api.py::test_health_endpoint PASSED
 tests/test_api.py::test_summary_endpoint PASSED
 tests/test_api.py::test_attention_endpoint PASSED
@@ -282,10 +297,20 @@ tests/test_api.py::test_simulate_reorder_endpoint PASSED
 tests/test_api.py::test_benchmarks_endpoint PASSED
 tests/test_api.py::test_export_report_endpoint PASSED
 tests/test_api.py::test_chat_cache PASSED
+tests/test_api.py::test_document_upload_and_retrieval_flow PASSED
+tests/test_api.py::test_forecast_endpoint PASSED
+tests/test_api.py::test_history_endpoints_flow PASSED
+tests/test_api.py::test_preview_csv_endpoint PASSED
 tests/test_data_loader.py::test_data_loader_valid_dataset PASSED
 tests/test_data_loader.py::test_date_gap_vs_zero_sales PASSED
+tests/test_document_parser.py::test_supported_extensions PASSED
+tests/test_document_parser.py::test_parse_text_file PASSED
+tests/test_document_parser.py::test_parse_markdown_file PASSED
+tests/test_document_parser.py::test_parse_pdf_file PASSED
+tests/test_document_parser.py::test_parse_docx_file PASSED
+tests/test_document_parser.py::test_unsupported_file_error PASSED
 
-======================== 20 passed in ~80s ========================
+======================== 31 passed in 10.47s ========================
 ```
 
 ---

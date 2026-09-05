@@ -3,262 +3,798 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NexusTiq24 — PS03 Retail Sales & Inventory Copilot</title>
-  <meta name="description" content="Grounded, deterministic-first retail sales and inventory copilot for store managers.">
+  <title>NexusTiq24 — NEXUS RetailIQ — PS03 Retail Copilot</title>
+  <meta name="description" content="Grounded deterministic-first inventory intelligence, demand forecasting, visual data mapping, and evidence-backed copilot.">
   <link rel="icon" type="image/svg+xml" href="/static/assets/logo.svg">
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <div class="container">
-    <!-- HEADER -->
-    <header>
-      <div class="brand-wrapper">
-        <img src="/static/assets/logo.svg" alt="Retail Copilot Logo" class="brand-logo" id="app-logo">
-        <div>
-          <div class="brand-title">
-            <span>NexusTiq24</span>
-            <span class="highlight">Retail Copilot</span>
-            <span class="badge-ps03">PS03</span>
-          </div>
-          <div class="brand-subtitle">Deterministic-First Sales & Inventory Intelligence for Store Managers</div>
+  <div class="app-layout">
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar">
+      <!-- Brand Logo -->
+      <div class="sidebar-brand">
+        <div class="brand-icon-box">
+          <svg viewBox="0 0 24 24" class="sidebar-logo-svg" fill="none" stroke="currentColor">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
-      </div>
-
-      <div class="header-status-area">
-        <div class="dataset-meta-badge" id="dataset-period-badge">
-          <span>📅</span> <span id="period-text">Dataset: Jun 15 – Aug 28, 2026 (75 Days)</span>
-        </div>
-        <div class="status-pill" id="system-status-pill">
-          <div class="status-dot"></div>
-          <span id="status-text">Backend Connected</span>
-        </div>
-        <button class="btn-secondary" id="btn-simulate" onclick="openSimulatorModal()">
-          🎯 Reorder Simulator
-        </button>
-        <button class="btn-secondary" id="btn-benchmarks" onclick="openBenchmarksModal()">
-          🏆 Benchmarks
-        </button>
-        <button class="btn-secondary" id="btn-open-catalog" onclick="openCatalogModal()">
-          📦 Catalog
-        </button>
-        <button class="btn-secondary" id="btn-export-brief" onclick="exportDailyBrief()" style="border-color: rgba(16, 185, 129, 0.4); color: #34d399;">
-          📥 Export Brief
-        </button>
-      </div>
-    </header>
-
-    <!-- STATS SUMMARY BAR -->
-    <section class="stats-bar" aria-label="Business Key Performance Indicators">
-      <div class="stat-item">
-        <span class="stat-label">Retail Stores</span>
-        <span class="stat-value" id="stat-stores">4 Branches</span>
-        <span class="stat-subtext">Hyderabad, Vijayawada, Chennai, Bengaluru</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Catalogued Products</span>
-        <span class="stat-value" id="stat-products">25 SKUs</span>
-        <span class="stat-subtext">Beverages, Snacks, Food, Care, Household</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Total Units Sold (75d)</span>
-        <span class="stat-value" id="stat-units">...</span>
-        <span class="stat-subtext" id="stat-sales-records">Verified sales records</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Gross Revenue (75d)</span>
-        <span class="stat-value" id="stat-revenue">₹...</span>
-        <span class="stat-subtext">Traceable to itemized sales transactions</span>
-      </div>
-    </section>
-
-    <!-- MAIN WORKSPACE -->
-    <main class="workspace-grid">
-      <!-- LEFT: ATTENTION PANEL -->
-      <section class="panel" aria-labelledby="panel-attention-title">
-        <div class="panel-header">
-          <div class="panel-title" id="panel-attention-title">
-            <span>⚠️ Needs Attention Today</span>
-            <span class="panel-badge" id="alerts-count-badge">0 Alerts</span>
+        <div class="brand-text">
+          <div class="brand-name">NEXUS <span>RetailIQ</span></div>
+          <div class="brand-sub">
+            <span class="sub-dot"></span> Neumorphic Soft Copilot
           </div>
         </div>
+      </div>
 
-        <!-- Filter Tabs -->
-        <div class="filter-tabs" role="tablist">
-          <button class="tab-btn active" onclick="filterAttention('all', this)">All</button>
-          <button class="tab-btn" onclick="filterAttention('stockout_risk', this)">🔴 Stockout Risk</button>
-          <button class="tab-btn" onclick="filterAttention('dead_stock', this)">🟠 Dead Stock</button>
-          <button class="tab-btn" onclick="filterAttention('sales_spike', this)">🔵 Sales Spike</button>
-          <button class="tab-btn" onclick="filterAttention('sales_drop', this)">🟡 Sales Drop</button>
+      <!-- Navigation Section -->
+      <div class="sidebar-section-label">CORE INTELLIGENCE</div>
+      <nav class="sidebar-menu" role="navigation">
+        <button class="nav-item active" data-tab="dashboard" onclick="switchTab('dashboard', this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/>
+            <rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/>
+            <rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/>
+            <rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/>
+          </svg>
+          <span>Dashboard</span>
+        </button>
+
+        <button class="nav-item" data-tab="copilot" onclick="switchTab('copilot', this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-width="2"/>
+          </svg>
+          <span>AI Copilot</span>
+          <span class="nav-badge-ai">AI</span>
+        </button>
+
+        <button class="nav-item" data-tab="forecast" onclick="switchTab('forecast', this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" stroke-width="2"/>
+            <polyline points="17 6 23 6 23 12" stroke-width="2"/>
+          </svg>
+          <span>Demand Forecast</span>
+        </button>
+
+        <button class="nav-item" data-tab="inventory" onclick="switchTab('inventory', this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="3" stroke-width="2"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke-width="2"/>
+          </svg>
+          <span>Inventory Intelligence</span>
+        </button>
+
+        <button class="nav-item" data-tab="products" onclick="switchTab('products', this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" stroke-width="2"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke-width="2"/>
+            <line x1="12" y1="22.08" x2="12" y2="12" stroke-width="2"/>
+          </svg>
+          <span>Products</span>
+        </button>
+
+        <button class="nav-item" data-tab="stores" onclick="switchTab('stores', this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-width="2"/>
+            <polyline points="9 22 9 12 15 12 15 22" stroke-width="2"/>
+          </svg>
+          <span>Stores</span>
+        </button>
+
+        <button class="nav-item" data-tab="alerts" onclick="switchTab('alerts', this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke-width="2"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke-width="2"/>
+          </svg>
+          <span>Alerts</span>
+          <span class="nav-badge alert-pill" id="sidebar-alert-badge">12</span>
+        </button>
+
+        <button class="nav-item" data-tab="simulator" onclick="switchTab('simulator', this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10" stroke-width="2"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke-width="2"/>
+            <line x1="12" y1="17" x2="12.01" y2="17" stroke-width="2"/>
+          </svg>
+          <span>What-If Simulator</span>
+        </button>
+
+        <button class="nav-item" data-tab="recommendations" onclick="switchTab('recommendations', this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="17 1 21 5 17 9" stroke-width="2"/>
+            <path d="M3 11V9a4 4 0 0 1 4-4h14" stroke-width="2"/>
+            <polyline points="7 23 3 19 7 15" stroke-width="2"/>
+            <path d="M21 13v2a4 4 0 0 1-4 4H3" stroke-width="2"/>
+          </svg>
+          <span>Recommendations</span>
+        </button>
+
+        <button class="nav-item" data-tab="history" onclick="switchTab('history', this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10" stroke-width="2"/>
+            <polyline points="12 6 12 12 16 14" stroke-width="2"/>
+          </svg>
+          <span>Decision History</span>
+          <span class="nav-badge history-pill" id="sidebar-history-badge">0</span>
+        </button>
+
+        <button class="nav-item" data-tab="import" onclick="switchTab('import', this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke-width="2"/>
+            <polyline points="17 8 12 3 7 8" stroke-width="2"/>
+            <line x1="12" y1="3" x2="12" y2="15" stroke-width="2"/>
+          </svg>
+          <span>Import Data</span>
+        </button>
+
+        <button class="nav-item" data-tab="documents" onclick="switchTab('documents', this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke-width="2"/>
+            <polyline points="14 2 14 8 20 8" stroke-width="2"/>
+            <line x1="16" y1="13" x2="8" y2="13" stroke-width="2"/>
+            <line x1="16" y1="17" x2="8" y2="17" stroke-width="2"/>
+          </svg>
+          <span>Document Hub</span>
+          <span class="nav-badge doc-pill" id="sidebar-doc-badge">0</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="engine-status">
+          <span class="pulse-dot"></span>
+          <span>DETERMINISTIC ENGINE ACTIVE</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="main-wrapper">
+      <!-- TOP COMMAND HEADER -->
+      <header class="command-header">
+        <div class="header-search-box">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8" stroke-width="2"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65" stroke-width="2"/>
+          </svg>
+          <input type="text" id="global-search-input" placeholder="Search products, SKUs, or alerts... (Ctrl + K)" onkeydown="handleGlobalSearch(event)">
         </div>
 
-        <!-- Dynamic Attention Cards -->
-        <div class="attention-cards-container" id="attention-cards-list">
-          <div class="attention-card skeleton-pulse" style="height: 140px;"></div>
-          <div class="attention-card skeleton-pulse" style="height: 140px;"></div>
-        </div>
-      </section>
-
-      <!-- RIGHT: CHAT & GROUNDED REASONING -->
-      <section class="panel chat-panel" aria-labelledby="panel-chat-title">
-        <div class="panel-header">
-          <div class="panel-title" id="panel-chat-title">
-            <span>💬 Store Manager Copilot</span>
+        <div class="header-right-tools">
+          <div class="header-data-source">
+            <span class="source-dot"></span>
+            <span>Data Source: <strong id="header-source-text">Demo Data (75d)</strong></span>
           </div>
-          <div style="font-size: 0.78rem; color: var(--text-muted);">
-            Grounding Engine: <strong style="color: #34d399;">Deterministic + Gemini 3.5</strong>
+
+          <button class="btn-header-action" onclick="switchTab('import')">
+            <span>📥</span> Import Data
+          </button>
+
+          <div class="store-select-wrapper">
+            <select id="header-store-select" onchange="handleStoreFilterChange(this.value)">
+              <option value="all">All Stores (Consolidated)</option>
+              <option value="S01">Hyderabad Flagship</option>
+              <option value="S02">Vijayawada Express</option>
+              <option value="S03">Chennai Central</option>
+              <option value="S04">Bengaluru Hub</option>
+            </select>
           </div>
-        </div>
 
-        <!-- Conversation History -->
-        <div class="chat-history" id="chat-messages-stream">
-          <!-- Initial Welcome Message -->
-          <div class="message-bubble copilot">
-            <div class="copilot-response-card">
-              <div class="copilot-badge-row">
-                <div class="copilot-author">
-                  <img src="/static/assets/logo.svg" alt="" width="20" height="20">
-                  <span>Retail Copilot</span>
-                </div>
-                <div class="grounding-tag">
-                  <span>🛡️</span> Zero-Hallucination Grounded
-                </div>
-              </div>
-              <div class="copilot-answer-text">
-                Hello Store Manager! I am your <strong>Retail Sales & Inventory Copilot</strong>.
+          <button class="btn-header-action btn-reset" onclick="resetDemoState()" title="Reset to initial grounded baseline">
+            <span>🔄</span> Reset Demo
+          </button>
 
-I analyze our store transactions, inventory levels, stockout risks, and sales anomalies with 100% mathematical fidelity. Every number is grounded in our verified dataset. If data for a product or branch does not exist, I will explicitly tell you rather than guess.
+          <button class="btn-brief-export" onclick="exportDailyBrief()" title="Download CSV Attention Brief">
+            📥 Export Brief
+          </button>
 
-Select one of the demo prompts below or ask any question about our inventory, stores, or reorder needs.
-              </div>
+          <div class="user-profile-badge">
+            <div class="user-avatar">S</div>
+            <div class="user-info">
+              <span class="user-name">sabeeshvar359</span>
+              <span class="user-role">● manager</span>
             </div>
           </div>
         </div>
+      </header>
 
-        <!-- Suggested Chips -->
-        <div class="chips-wrapper">
-          <div class="chips-label">🎯 Click to Test Core Scenarios:</div>
-          <div class="chips-row">
-            <button class="chip chip-demo" onclick="submitPrompt('What products are running out soon?')">
-              🔴 Demo 1: Stockout Risk
-            </button>
-            <button class="chip chip-demo" onclick="submitPrompt('Which products are not moving (dead stock)?')">
-              🟠 Demo 2: Dead Stock
-            </button>
-            <button class="chip chip-demo" onclick="submitPrompt('What unusual sales spikes or drops happened?')">
-              🔵 Demo 3: Sales Anomalies
-            </button>
-            <button class="chip chip-demo" onclick="submitPrompt('How did Product P17 perform in Chennai?')">
-              🛑 Demo 4: Null Case (No Data)
-            </button>
-            <button class="chip" onclick="submitPrompt('What should I reorder for Fresh Orange Juice in Hyderabad?')">
-              📦 Reorder Fresh Juice
-            </button>
-            <button class="chip" onclick="submitPrompt('Which store is selling Energy Boost fastest?')">
-              ⚡ Energy Boost Leader
-            </button>
-            <button class="chip" onclick="submitPrompt('Simulate 14 days of cover for Fresh Orange Juice in Hyderabad')">
-              🔮 14-Day Simulation
-            </button>
-            <button class="chip" onclick="submitPrompt('Compare overall performance across all retail stores')">
-              📊 Cross-Store Leaderboard
-            </button>
+      <!-- TABS CONTAINER -->
+      <main class="content-body">
+
+        <!-- 1. DASHBOARD OVERVIEW VIEW -->
+        <section id="view-dashboard" class="tab-view active">
+          <div class="section-title-bar">
+            <div>
+              <h2 class="view-title">EXECUTIVE COMMAND DASHBOARD</h2>
+              <p class="view-subtitle">Consolidated retail KPIs, sales velocity, and multi-store health ranking</p>
+            </div>
+            <div class="dataset-meta-badge">
+              <span id="period-text">Dataset: Jun 15 – Aug 28, 2026 (75 Days)</span>
+            </div>
           </div>
-        </div>
 
-        <!-- Question Input Form -->
-        <form class="chat-input-form" id="chat-form" onsubmit="handleChatSubmit(event)">
-          <button type="button" class="btn-mic" id="btn-mic" onclick="toggleVoiceInput()" title="Hands-Free Voice Dictation">
-            🎤
-          </button>
-          <input 
-            type="text" 
-            id="chat-input-field" 
-            class="chat-input" 
-            placeholder="Ask your store data or click 🎤 to speak..." 
-            autocomplete="off"
-            required
-          >
-          <button type="submit" class="btn-send" id="btn-send-chat">
-            <span>Ask Copilot</span>
-            <span>↵</span>
-          </button>
-        </form>
-      </section>
-    </main>
-  </div>
-
-  <!-- WHAT-IF REORDER SIMULATOR MODAL -->
-  <div class="modal-overlay" id="simulator-modal" onclick="closeSimulatorModal(event)">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <h3 style="font-size: 1.1rem; font-weight: 700;">🎯 What-If Reorder & Inventory Simulator</h3>
-        <button class="btn-close-modal" onclick="closeSimulatorModal()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div style="margin-bottom: 1.25rem; font-size: 0.85rem; color: var(--text-secondary);">
-          Simulate replenishment capital requirements and order quantities for any branch and product.
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
-          <div>
-            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Store Location</label>
-            <select id="sim-store-select" class="form-select" onchange="runSimulation()"></select>
+          <div class="stats-overview-grid">
+            <div class="stat-card">
+              <span class="stat-label">Retail Stores</span>
+              <span class="stat-value" id="stat-stores">4 Branches</span>
+              <span class="stat-subtext">Hyderabad, Vijayawada, Chennai, Bengaluru</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Catalogued Products</span>
+              <span class="stat-value" id="stat-products">25 SKUs</span>
+              <span class="stat-subtext">Beverages, Snacks, Food, Care, Household</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Total Units Sold (75d)</span>
+              <span class="stat-value" id="stat-units">...</span>
+              <span class="stat-subtext" id="stat-sales-records">Verified sales transactions</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Gross Revenue (75d)</span>
+              <span class="stat-value" id="stat-revenue">₹...</span>
+              <span class="stat-subtext">Traceable to itemized store transactions</span>
+            </div>
           </div>
-          <div>
-            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Product</label>
-            <select id="sim-product-select" class="form-select" onchange="runSimulation()"></select>
+
+          <!-- Quick Shortcuts Row -->
+          <div class="quick-shortcuts-row">
+            <div class="shortcut-box" onclick="switchTab('copilot')">
+              <div class="shortcut-icon">💬</div>
+              <div class="shortcut-content">
+                <strong>Ask AI Copilot</strong>
+                <span>Natural language inquiries with verified evidence cards</span>
+              </div>
+            </div>
+            <div class="shortcut-box" onclick="switchTab('forecast')">
+              <div class="shortcut-icon">📈</div>
+              <div class="shortcut-content">
+                <strong>Demand Forecasting Engine</strong>
+                <span>Inspect 7d and 14d projected runout dates</span>
+              </div>
+            </div>
+            <div class="shortcut-box" onclick="switchTab('simulator')">
+              <div class="shortcut-icon">🎯</div>
+              <div class="shortcut-content">
+                <strong>What-If Simulator</strong>
+                <span>Simulate dynamic coverage horizons & procurement costs</span>
+              </div>
+            </div>
+            <div class="shortcut-box" onclick="switchTab('import')">
+              <div class="shortcut-icon">📥</div>
+              <div class="shortcut-content">
+                <strong>Visual Column Mapper</strong>
+                <span>Ingest new POS sheets with real-time recalculation</span>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.25); padding: 1rem; border-radius: var(--radius-sm);">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-            <label style="font-size: 0.82rem; font-weight: 600; color: #a5b4fc;">Desired Inventory Coverage:</label>
-            <span id="sim-days-display" style="font-weight: 700; font-family: 'JetBrains Mono', monospace; color: #38bdf8;">14 Days</span>
+          <!-- Store Operational Health Leaderboard -->
+          <div class="panel-card" style="margin-top: 1.5rem;">
+            <div class="panel-card-header">
+              <h3 class="panel-card-title">🏆 Store Operational Health Leaderboard</h3>
+              <span class="panel-tag">Cross-Store Benchmarks</span>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table" id="overview-leaderboard-table">
+                <thead>
+                  <tr>
+                    <th>Store Branch</th>
+                    <th>City</th>
+                    <th>Total Revenue</th>
+                    <th>Units Sold</th>
+                    <th>Stockouts</th>
+                    <th>Dead Stock</th>
+                    <th>Health Score</th>
+                  </tr>
+                </thead>
+                <tbody id="overview-leaderboard-body">
+                  <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Loading benchmarks...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-          <input type="range" id="sim-days-slider" min="3" max="45" value="14" class="slider-input" oninput="updateSimSlider(this.value)">
-          <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem;">
-            <span>3 Days (Lean)</span>
-            <span>14 Days (Standard)</span>
-            <span>30 Days (Safety Buffer)</span>
-            <span>45 Days</span>
+        </section>
+
+        <!-- 2. AI COPILOT VIEW -->
+        <section id="view-copilot" class="tab-view">
+          <div class="copilot-container">
+            <div class="copilot-header-bar">
+              <div>
+                <h2 class="view-title">EVIDENCE COPILOT</h2>
+                <p class="view-subtitle">Deterministic-first conversational assistant with zero hallucinations & citation cards</p>
+              </div>
+              <div class="status-pill" id="system-status-pill">
+                <div class="status-dot"></div>
+                <span id="status-text">Backend Connected</span>
+              </div>
+            </div>
+
+            <!-- Scenario Chips -->
+            <div class="scenario-chips-row">
+              <button class="scenario-chip" onclick="askQuestion('What products are running out soon in Hyderabad?')">
+                🚨 Stockouts in Hyderabad
+              </button>
+              <button class="scenario-chip" onclick="askQuestion('Which products are not moving in Vijayawada?')">
+                📦 Dead Stock in Vijayawada
+              </button>
+              <button class="scenario-chip" onclick="askQuestion('What unusual sales changes should I investigate?')">
+                ⚡ Demand Anomalies
+              </button>
+              <button class="scenario-chip" onclick="askQuestion('What is the reorder recommendation for Fresh Orange Juice in Hyderabad?')">
+                🎯 Reorder Fresh Orange Juice
+              </button>
+              <button class="scenario-chip" onclick="askQuestion('How did Product P17 perform in Chennai?')">
+                🛡️ Case 5: Missing Data
+              </button>
+            </div>
+
+            <!-- Chat Message Window -->
+            <div class="chat-messages-box" id="chat-messages-container">
+              <div class="chat-message bot-message">
+                <div class="message-bubble">
+                  Hello! I am your <strong>NEXUS Retail Copilot</strong>. Ask me anything regarding stockout risks, non-moving inventory, sales spikes, or query your uploaded vendor agreements. Every answer is deterministically verified.
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat Input Bar -->
+            <form class="chat-input-form" onsubmit="handleChatSubmit(event)">
+              <button type="button" class="btn-attach" onclick="triggerFilePicker()" title="Upload Document (PDF, DOCX, TXT, MD)">
+                📎
+              </button>
+              <button type="button" class="btn-voice" id="btn-voice-input" onclick="toggleVoiceInput()" title="Voice Dictation">
+                🎤
+              </button>
+              <input type="text" id="chat-input-field" placeholder="Ask NEXUS about inventory, reorders, anomalies, or vendor docs..." autocomplete="off">
+              <button type="submit" class="btn-send">
+                Ask NEXUS <span>→</span>
+              </button>
+            </form>
+            <input type="file" id="hidden-file-input" style="display: none;" accept=".pdf,.docx,.txt,.md" onchange="handleFileInputChange(event)">
           </div>
-        </div>
+        </section>
 
-        <!-- Simulation Results Cards -->
-        <div id="sim-results-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1rem;"></div>
-        <div id="sim-assumption-note" style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;"></div>
-      </div>
-    </div>
-  </div>
+        <!-- 3. DEMAND FORECAST VIEW (From First Screenshot) -->
+        <section id="view-forecast" class="tab-view">
+          <div class="section-title-bar">
+            <div>
+              <h2 class="view-title">DEMAND FORECASTING ENGINE</h2>
+              <p class="view-subtitle">Deterministic 7-Day & 14-Day Demand Forecasts and Projected Stockout Dates</p>
+            </div>
+            <div class="forecast-filter-pills">
+              <button class="forecast-pill active" onclick="filterForecastCards('all', this)">All Forecasts</button>
+              <button class="forecast-pill" onclick="filterForecastCards('critical', this)">🔴 Critical Risk</button>
+              <button class="forecast-pill" onclick="filterForecastCards('warning', this)">🟡 Warning Risk</button>
+              <button class="forecast-pill" onclick="filterForecastCards('healthy', this)">🟢 Healthy Stock</button>
+              <button class="forecast-pill" onclick="filterForecastCards('dead', this)">🟠 Dead Stock</button>
+            </div>
+          </div>
 
-  <!-- BENCHMARKS MODAL -->
-  <div class="modal-overlay" id="benchmarks-modal" onclick="closeBenchmarksModal(event)">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <h3 style="font-size: 1.1rem; font-weight: 700;">🏆 Store Rankings & Category Benchmarks</h3>
-        <button class="btn-close-modal" onclick="closeBenchmarksModal()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <h4 style="margin-bottom: 0.75rem; color: #a5b4fc;">Branch Operational Efficiency Leaderboard</h4>
-        <div id="benchmarks-stores-container" style="margin-bottom: 1.75rem;">Loading rankings...</div>
-        <h4 style="margin-bottom: 0.75rem; color: #a5b4fc;">Category Revenue Share</h4>
-        <div id="benchmarks-categories-container">Loading categories...</div>
-      </div>
-    </div>
-  </div>
+          <div class="forecast-grid" id="forecast-cards-container">
+            <div class="skeleton-card skeleton-pulse"></div>
+            <div class="skeleton-card skeleton-pulse"></div>
+            <div class="skeleton-card skeleton-pulse"></div>
+            <div class="skeleton-card skeleton-pulse"></div>
+          </div>
+        </section>
 
-  <!-- CATALOG MODAL -->
-  <div class="modal-overlay" id="catalog-modal" onclick="closeCatalogModal(event)">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <h3 style="font-size: 1.1rem; font-weight: 700;">📦 Retail Store & Product Catalogue</h3>
-        <button class="btn-close-modal" onclick="closeCatalogModal()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <h4 style="margin-bottom: 0.75rem; color: #a5b4fc;">Stores (4 Branches)</h4>
-        <div id="modal-stores-list" style="margin-bottom: 1.5rem;">Loading stores...</div>
-        <h4 style="margin-bottom: 0.75rem; color: #a5b4fc;">Products (25 SKUs across 5 Categories)</h4>
-        <div id="modal-products-list">Loading products...</div>
-      </div>
+        <!-- 4. INVENTORY INTELLIGENCE VIEW -->
+        <section id="view-inventory" class="tab-view">
+          <div class="section-title-bar">
+            <div>
+              <h2 class="view-title">INVENTORY INTELLIGENCE MATRIX</h2>
+              <p class="view-subtitle">Detailed store-by-store stockout depletion, stagnation index, and days of cover</p>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div class="table-responsive">
+              <table class="data-table" id="inventory-matrix-table">
+                <thead>
+                  <tr>
+                    <th>Store</th>
+                    <th>SKU</th>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Current Stock</th>
+                    <th>Daily Velocity</th>
+                    <th>Days of Cover</th>
+                    <th>Operational Status</th>
+                  </tr>
+                </thead>
+                <tbody id="inventory-matrix-body">
+                  <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Loading inventory intelligence...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. PRODUCTS CATALOGUE VIEW -->
+        <section id="view-products" class="tab-view">
+          <div class="section-title-bar">
+            <div>
+              <h2 class="view-title">PRODUCT MERCHANDISE CATALOGUE</h2>
+              <p class="view-subtitle">Catalogued items, cost prices, selling prices, margins, and active network stock</p>
+            </div>
+            <div class="catalogue-controls">
+              <input type="text" id="catalogue-search-input" placeholder="Search by SKU or name..." oninput="filterCatalogueTable(this.value)">
+              <select id="catalogue-category-filter" onchange="filterCatalogueCategory(this.value)">
+                <option value="all">All Categories</option>
+                <option value="Beverages">Beverages</option>
+                <option value="Snacks & Bakery">Snacks & Bakery</option>
+                <option value="Food & Staples">Food & Staples</option>
+                <option value="Personal Care">Personal Care</option>
+                <option value="Household">Household</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div class="table-responsive">
+              <table class="data-table" id="catalogue-table">
+                <thead>
+                  <tr>
+                    <th>SKU</th>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Unit Cost</th>
+                    <th>Retail Price</th>
+                    <th>Gross Margin</th>
+                    <th>Network Stock</th>
+                  </tr>
+                </thead>
+                <tbody id="catalogue-table-body">
+                  <tr><td colspan="7" style="text-align:center; color: var(--text-muted);">Loading catalogue...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. STORES BENCHMARK VIEW -->
+        <section id="view-stores" class="tab-view">
+          <div class="section-title-bar">
+            <div>
+              <h2 class="view-title">STORE NETWORK BENCHMARKS</h2>
+              <p class="view-subtitle">Comparative store operational velocity, sales volume, and risk breakdown</p>
+            </div>
+          </div>
+
+          <div class="stores-benchmark-grid" id="stores-benchmark-cards">
+            <!-- Rendered by JS -->
+          </div>
+        </section>
+
+        <!-- 7. ALERTS VIEW (Needs Attention Today) -->
+        <section id="view-alerts" class="tab-view">
+          <div class="section-title-bar">
+            <div>
+              <h2 class="view-title">⚠️ ACTIVE OPERATIONAL ALERTS</h2>
+              <p class="view-subtitle">Needs Attention Today — deterministic anomaly detection rules</p>
+            </div>
+            <div class="filter-tabs" role="tablist">
+              <button class="tab-btn active" onclick="filterAttention('all', this)">All Issues</button>
+              <button class="tab-btn" onclick="filterAttention('stockout_risk', this)">🔴 Stockout Risk</button>
+              <button class="tab-btn" onclick="filterAttention('dead_stock', this)">🟠 Dead Stock</button>
+              <button class="tab-btn" onclick="filterAttention('sales_spike', this)">🔵 Sales Spike</button>
+              <button class="tab-btn" onclick="filterAttention('sales_drop', this)">🟡 Sales Drop</button>
+            </div>
+          </div>
+
+          <div class="attention-cards-container" id="attention-cards-list">
+            <div class="skeleton-card skeleton-pulse"></div>
+          </div>
+        </section>
+
+        <!-- 8. WHAT-IF SIMULATOR VIEW -->
+        <section id="view-simulator" class="tab-view">
+          <div class="section-title-bar">
+            <div>
+              <h2 class="view-title">WHAT-IF REORDER SIMULATOR</h2>
+              <p class="view-subtitle">Test custom coverage horizons (3 to 30 days) with deterministic cost calculations</p>
+            </div>
+          </div>
+
+          <div class="simulator-layout">
+            <div class="simulator-form-panel">
+              <div class="form-group">
+                <label for="sim-store-select">Store Branch</label>
+                <select id="sim-store-select" class="form-control" onchange="runSimulation()">
+                  <option value="S01">Hyderabad Flagship (S01)</option>
+                  <option value="S02">Vijayawada Express (S02)</option>
+                  <option value="S03">Chennai Central (S03)</option>
+                  <option value="S04">Bengaluru Hub (S04)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="sim-product-select">Product SKU</label>
+                <select id="sim-product-select" class="form-control" onchange="runSimulation()">
+                  <!-- Populated by JS -->
+                </select>
+              </div>
+
+              <div class="form-group">
+                <div class="slider-header">
+                  <label for="sim-cover-slider">Target Coverage Horizon</label>
+                  <span class="slider-value" id="sim-slider-val">7 Days</span>
+                </div>
+                <input type="range" id="sim-cover-slider" min="3" max="30" value="7" class="custom-range" oninput="updateCoverDays(this.value)">
+                <div class="slider-ticks">
+                  <span>3d (Urgent)</span>
+                  <span>7d (Standard)</span>
+                  <span>14d (Fortnight)</span>
+                  <span>30d (Monthly)</span>
+                </div>
+              </div>
+
+              <button class="btn-primary" style="width: 100%; margin-top: 1rem;" onclick="runSimulation()">
+                ⚡ Recalculate Scenario
+              </button>
+            </div>
+
+            <div class="simulator-result-panel" id="sim-results-card">
+              <div style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                Select a store and product to calculate replenishment parameters.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. RECOMMENDATIONS & TRANSFERS VIEW -->
+        <section id="view-recommendations" class="tab-view">
+          <div class="section-title-bar">
+            <div>
+              <h2 class="view-title">REORDER & INTER-STORE TRANSFERS</h2>
+              <p class="view-subtitle">Smart balance recommendations: transfer stagnant stock from low-velocity branches to avoid stockouts</p>
+            </div>
+          </div>
+
+          <div class="transfer-cards-grid" id="reorder-transfers-container">
+            <!-- Dynamic reorder & transfer suggestions -->
+          </div>
+        </section>
+
+        <!-- 10. DECISION HISTORY VIEW (User Requested Feature) -->
+        <section id="view-history" class="tab-view">
+          <div class="section-title-bar">
+            <div>
+              <h2 class="view-title">DECISION & QUERY AUDIT TRAIL</h2>
+              <p class="view-subtitle">Persistent history of manager questions, simulations, document uploads, and analytical exports</p>
+            </div>
+            <div class="history-actions-bar">
+              <input type="text" id="history-search-input" placeholder="Search past history..." oninput="filterHistoryItems(this.value)">
+              <div class="history-filter-pills">
+                <button class="forecast-pill active" onclick="filterHistoryType('all', this)">All History</button>
+                <button class="forecast-pill" onclick="filterHistoryType('chat_query', this)">💬 Inquiries</button>
+                <button class="forecast-pill" onclick="filterHistoryType('simulation', this)">🎯 Simulations</button>
+                <button class="forecast-pill" onclick="filterHistoryType('document_upload', this)">📄 Uploads</button>
+              </div>
+              <button class="btn-danger-outline" onclick="clearHistoryLog()" title="Clear all history">
+                🗑️ Clear History
+              </button>
+              <button class="btn-secondary" onclick="exportHistoryJSON()" title="Export JSON">
+                💾 Export JSON
+              </button>
+            </div>
+          </div>
+
+          <div class="history-cards-container" id="history-records-container">
+            <div style="text-align: center; color: var(--text-muted); padding: 3rem;">
+              Loading interaction history...
+            </div>
+          </div>
+        </section>
+
+        <!-- 11. IMPORT RETAIL DATA & VISUAL COLUMN MAPPING VIEW (From 2nd Screenshot) -->
+        <section id="view-import" class="tab-view">
+          <div class="section-title-bar">
+            <div>
+              <h2 class="view-title">Import Retail Data <span class="engine-badge-sub">CSV & SQLite Engine</span></h2>
+              <p class="view-subtitle">Upload your POS transaction sheets or SQLite database. All dashboards, alerts, inventory formulas, and Gemini AI will dynamically recalculate from your real data.</p>
+            </div>
+          </div>
+
+          <!-- Top Status Cards (Matches Screenshot) -->
+          <div class="import-status-grid">
+            <div class="import-stat-card">
+              <div class="import-stat-label">📄 File Name</div>
+              <div class="import-stat-val" id="import-active-filename">nexus_retailiq_sample_data.csv</div>
+              <div class="import-stat-meta" id="import-active-format">CSV FORMAT</div>
+            </div>
+
+            <div class="import-stat-card">
+              <div class="import-stat-label">📦 Total Rows</div>
+              <div class="import-stat-val" id="import-active-rows">1,050</div>
+              <div class="import-stat-meta" id="import-active-cols">8 Source Columns</div>
+            </div>
+
+            <div class="import-stat-card">
+              <div class="import-stat-label">✅ Validation</div>
+              <div class="import-stat-val" style="color: #34d399;" id="import-active-validation">✓ Ready</div>
+              <div class="import-stat-meta">Required fields mapped</div>
+            </div>
+
+            <div class="import-stat-card import-action-card">
+              <div class="import-stat-label">Actions</div>
+              <div class="import-actions-row">
+                <button class="btn-choose-another" onclick="document.getElementById('csv-import-file-input').click()">
+                  🗑️ Choose Another
+                </button>
+                <button class="btn-activate-dataset" onclick="activateCurrentDataset()">
+                  Activate Dataset
+                </button>
+              </div>
+            </div>
+          </div>
+          <input type="file" id="csv-import-file-input" style="display: none;" accept=".csv" onchange="handleCsvFileSelected(event)">
+
+          <!-- Visual Column Mapping Card (Matches Screenshot) -->
+          <div class="panel-card" style="margin-top: 1.5rem;">
+            <div class="mapping-card-header">
+              <div>
+                <h3 class="panel-card-title">Visual Column Mapping</h3>
+                <p class="view-subtitle" style="margin-top: 2px;">Confirm or adjust how columns from your file match internal NEXUS RetailIQ fields.</p>
+              </div>
+              <div class="mapping-status-badges">
+                <span class="status-badge-ready">Sales Analytics: Ready</span>
+                <span class="status-badge-ready">Inventory: Ready</span>
+              </div>
+            </div>
+
+            <div class="mapping-fields-grid" id="mapping-fields-container">
+              <!-- Field 1: Product Name (Required) -->
+              <div class="mapping-field-box">
+                <div class="mapping-field-top">
+                  <span class="mapping-field-name">Product Name</span>
+                  <span class="badge-req">Required</span>
+                  <span class="badge-mapped">Mapped</span>
+                </div>
+                <div class="mapping-field-desc">Name or description of the merchandise SKU</div>
+                <div class="mapping-field-select-row">
+                  <span class="mapping-field-label">Source Column:</span>
+                  <select class="mapping-select" id="map-col-product-name" onchange="validateColumnMappings()">
+                    <option value="product_name">product_name</option>
+                    <option value="name">name</option>
+                    <option value="item_title">item_title</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Field 2: SKU / Barcode (Optional) -->
+              <div class="mapping-field-box">
+                <div class="mapping-field-top">
+                  <span class="mapping-field-name">SKU / Barcode</span>
+                  <span class="badge-opt">Optional</span>
+                  <span class="badge-mapped">Mapped</span>
+                </div>
+                <div class="mapping-field-desc">Stock keeping unit identifier or code</div>
+                <div class="mapping-field-select-row">
+                  <span class="mapping-field-label">Source Column:</span>
+                  <select class="mapping-select" id="map-col-product-id" onchange="validateColumnMappings()">
+                    <option value="product_id">product_id</option>
+                    <option value="sku">sku</option>
+                    <option value="barcode">barcode</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Field 3: Category (Optional) -->
+              <div class="mapping-field-box">
+                <div class="mapping-field-top">
+                  <span class="mapping-field-name">Category</span>
+                  <span class="badge-opt">Optional</span>
+                  <span class="badge-mapped">Mapped</span>
+                </div>
+                <div class="mapping-field-desc">Merchandise classification (e.g. Dairy, Snacks, Grocery)</div>
+                <div class="mapping-field-select-row">
+                  <span class="mapping-field-label">Source Column:</span>
+                  <select class="mapping-select" id="map-col-category" onchange="validateColumnMappings()">
+                    <option value="category">category</option>
+                    <option value="department">department</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Field 4: Unit Selling Price (Optional) -->
+              <div class="mapping-field-box">
+                <div class="mapping-field-top">
+                  <span class="mapping-field-name">Unit Selling Price</span>
+                  <span class="badge-opt">Optional</span>
+                  <span class="badge-unmapped" id="badge-unmapped-price">Mapped</span>
+                </div>
+                <div class="mapping-field-desc">Retail price per unit (₹ or $)</div>
+                <div class="mapping-field-select-row">
+                  <span class="mapping-field-label">Source Column:</span>
+                  <select class="mapping-select" id="map-col-selling-price" onchange="validateColumnMappings()">
+                    <option value="unit_price">unit_price</option>
+                    <option value="price">price</option>
+                    <option value="none">(None / Not in file)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Field 5: Unit Cost Price (Optional) -->
+              <div class="mapping-field-box">
+                <div class="mapping-field-top">
+                  <span class="mapping-field-name">Unit Cost Price</span>
+                  <span class="badge-opt">Optional</span>
+                  <span class="badge-unmapped" id="badge-unmapped-cost">Mapped</span>
+                </div>
+                <div class="mapping-field-desc">Wholesale acquisition cost per unit</div>
+                <div class="mapping-field-select-row">
+                  <span class="mapping-field-label">Source Column:</span>
+                  <select class="mapping-select" id="map-col-cost-price" onchange="validateColumnMappings()">
+                    <option value="cost_price">cost_price</option>
+                    <option value="cost">cost</option>
+                    <option value="none">(None / Not in file)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Field 6: Supplier Lead Time (Days) (Optional) -->
+              <div class="mapping-field-box">
+                <div class="mapping-field-top">
+                  <span class="mapping-field-name">Supplier Lead Time (Days)</span>
+                  <span class="badge-opt">Optional</span>
+                  <span class="badge-unmapped" id="badge-unmapped-lead">Unmapped</span>
+                </div>
+                <div class="mapping-field-desc">Days required for supplier restocking delivery</div>
+                <div class="mapping-field-select-row">
+                  <span class="mapping-field-label">Source Column:</span>
+                  <select class="mapping-select" id="map-col-lead-time" onchange="validateColumnMappings()">
+                    <option value="none">(None / Not in file)</option>
+                    <option value="lead_time">lead_time</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 12. DOCUMENT HUB VIEW (Multi-Format Knowledge Base) -->
+        <section id="view-documents" class="tab-view">
+          <div class="section-title-bar">
+            <div>
+              <h2 class="view-title">OPERATIONAL DOCUMENT KNOWLEDGE HUB</h2>
+              <p class="view-subtitle">Upload supplier agreements, store standard operating procedures, return policies, or invoices (PDF, DOCX, TXT, MD)</p>
+            </div>
+          </div>
+
+          <div class="doc-hub-layout">
+            <div class="doc-upload-box">
+              <div class="dropzone" id="doc-hub-dropzone" onclick="triggerFilePicker()">
+                <div class="dropzone-icon">📄</div>
+                <div class="dropzone-title">Click or Drag & Drop Documents Here</div>
+                <div class="dropzone-sub">Supported formats: PDF, DOCX, TXT, MD (Max 10MB)</div>
+                <div class="format-badges-row">
+                  <span class="fmt-badge badge-pdf">PDF</span>
+                  <span class="fmt-badge badge-docx">DOCX</span>
+                  <span class="fmt-badge badge-txt">TXT</span>
+                  <span class="fmt-badge badge-md">MD</span>
+                </div>
+              </div>
+              <div id="upload-status-box" style="margin-top: 1rem; display: none;"></div>
+            </div>
+
+            <div class="doc-list-box">
+              <div class="panel-card">
+                <div class="panel-card-header">
+                  <h3 class="panel-card-title">Indexed Operational Documents (<span id="doc-hub-total-count">0</span>)</h3>
+                  <span class="panel-tag" id="doc-hub-chunks-count">0 Chunks Indexed</span>
+                </div>
+                <div class="doc-items-list" id="doc-hub-items-list">
+                  <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    No documents uploaded yet. Upload a file above to expand the Copilot's knowledge base.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
     </div>
   </div>
 

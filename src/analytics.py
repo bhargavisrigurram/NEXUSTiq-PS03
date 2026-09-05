@@ -494,3 +494,84 @@ class RetailAnalytics:
             "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
 
+    def get_demand_forecast(self, store_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Computes deterministic 7-day & 14-day demand forecasts and projected stockout dates.
+        
+        Matches the Demand Forecasting Engine view:
+        - Current Stock
+        - Avg Daily Demand (recent 7d velocity)
+        - 7-Day Demand Forecast
+        - 14-Day Demand Forecast
+        - Estimated Stockout Date (calendar date based on dataset max date)
+        - Status Level: CRITICAL STOCK-OUT RISK, WARNING STOCK-OUT RISK, HEALTHY STOCK, DEAD STOCK
+        """
+        recent_start = self.max_date - timedelta(days=6)
+        recent_sales = self.sales_df[self.sales_df["date"] >= recent_start]
+
+        recent_agg = recent_sales.groupby(["store_id", "product_id"])["units_sold"].sum().reset_index()
+        recent_agg["avg_daily_demand"] = recent_agg["units_sold"] / 7.0
+
+        merged = pd.merge(self.inventory_df, recent_agg, on=["store_id", "product_id"], how="left")
+        merged["avg_daily_demand"] = merged["avg_daily_demand"].fillna(0.0)
+
+        if store_id and store_id != "all":
+            merged = merged[merged["store_id"] == store_id]
+
+        forecasts = []
+        for _, row in merged.iterrows():
+            sid = row["store_id"]
+            pid = row["product_id"]
+            curr_stock = int(row["current_stock"])
+            daily_demand = float(row["avg_daily_demand"])
+
+            d7 = round(daily_demand * 7.0, 1)
+            d14 = round(daily_demand * 14.0, 1)
+
+            if daily_demand > 0:
+                days_left = round(curr_stock / daily_demand, 1)
+                projected_dt = self.max_date + timedelta(days=float(days_left))
+                est_date_str = projected_dt.strftime("%b %d, %Y")
+
+                if days_left <= 3.0:
+                    status_lvl = "CRITICAL STOCK-OUT RISK"
+                    status_cls = "critical"
+                    priority = 1
+                elif days_left <= 7.0:
+                    status_lvl = "WARNING STOCK-OUT RISK"
+                    status_cls = "warning"
+                    priority = 2
+                else:
+                    status_lvl = "HEALTHY STOCK"
+                    status_cls = "healthy"
+                    priority = 3
+            else:
+                days_left = None
+                est_date_str = "Stable / No Depletion"
+                status_lvl = "DEAD STOCK"
+                status_cls = "dead"
+                priority = 4
+
+            forecasts.append({
+                "product_id": pid,
+                "product_name": self.product_map.get(pid, pid),
+                "product_category": self.product_cat_map.get(pid, "General"),
+                "store_id": sid,
+                "store_name": self.store_map.get(sid, sid),
+                "current_stock": curr_stock,
+                "avg_daily_demand": round(daily_demand, 2),
+                "demand_7d": d7,
+                "demand_14d": d14,
+                "days_remaining": days_left,
+                "estimated_stockout_date": est_date_str,
+                "status_level": status_lvl,
+                "status_class": status_cls,
+                "_priority": priority
+            })
+
+        # Sort critical items first, then by days remaining ascending
+        forecasts.sort(key=lambda x: (x["_priority"], x["days_remaining"] if x["days_remaining"] is not None else 9999))
+        for f in forecasts:
+            del f["_priority"]
+
+        return forecasts
+

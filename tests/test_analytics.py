@@ -170,3 +170,24 @@ def test_benchmarks(sample_analytics):
         assert c["revenue_share_pct"] > 0
         assert c["top_selling_product"] != ""
 
+def test_demand_forecast(sample_analytics):
+    """Test deterministic 7-day and 14-day demand forecast calculations."""
+    forecasts = sample_analytics.get_demand_forecast()
+    assert len(forecasts) > 0
+    
+    # S01, P01 has stock = 20, daily = 10 -> critical stockout risk (2.0 days)
+    p01_f = next((f for f in forecasts if f["store_id"] == "S01" and f["product_id"] == "P01"), None)
+    assert p01_f is not None
+    assert p01_f["current_stock"] == 20
+    assert p01_f["avg_daily_demand"] == 10.0
+    assert p01_f["demand_7d"] == 70.0
+    assert p01_f["demand_14d"] == 140.0
+    assert p01_f["days_remaining"] == 2.0
+    assert p01_f["status_level"] == "CRITICAL STOCK-OUT RISK"
+    assert p01_f["status_class"] == "critical"
+
+    # Test filtering by store_id
+    s01_only = sample_analytics.get_demand_forecast(store_id="S01")
+    for f in s01_only:
+        assert f["store_id"] == "S01"
+
